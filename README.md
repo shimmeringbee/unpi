@@ -36,7 +36,37 @@ import "github.com/shimmeringbee/unipi"
 
 ## Usage
 
+### Writing
+
+```go
+serialPort := // UART port providing a Writer
+
+// Construct a SysReset
+frame := &Frame{
+    MessageType: AREQ,
+    Subsystem:   SYS,
+    CommandID:   0x00,
+    Payload:     []byte { 0x00 },
+}
+
+// Send Frame to CC253X, blocking operation
+err := unpi.Write(serialPort, frame)
 ```
+
+### Reading
+
+```go
+serialPort := // UART port providing a Reader
+
+// Read from CC253X, blocking operation
+frame, err := unpi.Read(serialPort)
+
+if err != nil {
+    // Handle Error
+}
+
+// Use frame
+fmt.Printf("%+v\n", frame)
 ```
 
 ## Maintainers
