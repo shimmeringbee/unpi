@@ -10,22 +10,18 @@ import (
 	"io"
 )
 
-type UNPI struct {
-	device io.ReadWriter
-}
-
 // Read reads from the ReadWriter provided to the UNPI struct until it receives
 // a whole UNPI frame. It returns a pointer to the frame, or an error if one
 // was encountered. Error may either be an issue with the structure of the
 // frame or an error raised by the ReadWriter.
-func (u *UNPI) Read() (*Frame, error) {
+func Read(r io.Reader) (*Frame, error) {
 	data := []byte{StartOfFrame, 0x00, 0x00, 0x00, 0x00}
 
-	if err := u.seekStartOfFrame(); err != nil {
+	if err := seekStartOfFrame(r); err != nil {
 		return nil, err
 	}
 
-	_, err := io.ReadFull(u.device, data[1:])
+	_, err := io.ReadFull(r, data[1:])
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +30,7 @@ func (u *UNPI) Read() (*Frame, error) {
 
 	data = append(data, make([]byte, payloadLength)...)
 
-	c, err := io.ReadFull(u.device, data[5:])
+	c, err := io.ReadFull(r, data[5:])
 	if err != nil && c != int(payloadLength) {
 		return nil, err
 	}
@@ -42,11 +38,11 @@ func (u *UNPI) Read() (*Frame, error) {
 	return UnmarshallFrame(data)
 }
 
-func (u *UNPI) seekStartOfFrame() error {
+func seekStartOfFrame(r io.Reader) error {
 	b := []byte{0x00}
 
 	for b[0] != StartOfFrame {
-		_, err := u.device.Read(b)
+		_, err := r.Read(b)
 
 		if err != nil {
 			return err
@@ -58,11 +54,11 @@ func (u *UNPI) seekStartOfFrame() error {
 
 // Write marshalls and writes a UNPI frame to the ReadWriter provided to the UNPI struct.
 // It will return an error if one was encountered while writing to the ReadWriter
-func (u *UNPI) Write(frame *Frame) error {
+func Write(w io.Writer, frame *Frame) error {
 	data := frame.Marshall()
 
 	dataSize := len(data)
-	dataWritten, err := u.device.Write(data)
+	dataWritten, err := w.Write(data)
 
 	if err != nil {
 		return err

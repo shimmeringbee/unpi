@@ -19,8 +19,7 @@ func TestUNPI_Read(t *testing.T) {
 		data := expected.Marshall()
 		device := bytes.NewBuffer(data)
 
-		u := &UNPI{device: device}
-		actual, err := u.Read()
+		actual, err := Read(device)
 
 		assert.NoError(t, err)
 		assert.Equal(t, &expected, actual)
@@ -38,8 +37,7 @@ func TestUNPI_Read(t *testing.T) {
 		data = append(data, expected.Marshall()...)
 		device := bytes.NewBuffer(data)
 
-		u := &UNPI{device: device}
-		actual, err := u.Read()
+		actual, err := Read(device)
 
 		assert.NoError(t, err)
 		assert.Equal(t, &expected, actual)
@@ -58,8 +56,7 @@ func TestUNPI_Read(t *testing.T) {
 
 		device := bytes.NewBuffer(data)
 
-		u := &UNPI{device: device}
-		_, err := u.Read()
+		_, err := Read(device)
 
 		assert.Error(t, err)
 		assert.True(t, errors.Is(err, FrameChecksumFailed))
@@ -75,8 +72,7 @@ func TestUNPI_Read(t *testing.T) {
 			Writer: nil,
 		}
 
-		u := &UNPI{device: &device}
-		_, err := u.Read()
+		_, err := Read(&device)
 
 		assert.Error(t, err)
 		assert.True(t, errors.Is(err, originalError))
@@ -96,8 +92,7 @@ func TestUNPI_Write(t *testing.T) {
 
 		device := bytes.Buffer{}
 
-		u := &UNPI{device: &device}
-		_ = u.Write(frame)
+		_ = Write(&device, frame)
 
 		assert.Equal(t, expected, device.Bytes())
 	})
@@ -114,8 +109,7 @@ func TestUNPI_Write(t *testing.T) {
 			},
 		}
 
-		u := &UNPI{device: &device}
-		err := u.Write(frame)
+		err := Write(&device, frame)
 
 		assert.Error(t, err)
 		assert.True(t, errors.Is(err, originalError))
@@ -131,8 +125,7 @@ func TestUNPI_Write(t *testing.T) {
 			},
 		}
 
-		u := &UNPI{device: &device}
-		err := u.Write(frame)
+		err := Write(&device, frame)
 
 		assert.Error(t, err)
 	})
