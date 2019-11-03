@@ -1,6 +1,9 @@
 package unpi
 
-import "bytes"
+import (
+	"bytes"
+	"errors"
+)
 
 // Constants extracted from:
 // - http://processors.wiki.ti.com/index.php/NPI_Type_SubSystem
@@ -72,6 +75,48 @@ func (f *Frame) Marshall() []byte {
 	buffer.WriteByte(checksum)
 
 	return buffer.Bytes()
+}
+
+var FrameChecksumFailed = errors.New("frame failed checksum")
+var FrameTooShort = errors.New("frame too short")
+var FrameMissingStartOfFrame = errors.New("frame is missing start of frame")
+
+const MinimumFrameSize int = 5
+
+func UnmarshallFrame(data []byte) (*Frame, error) {
+	dataLength := len(data)
+
+	if dataLength < MinimumFrameSize {
+		return nil, FrameTooShort
+	}
+
+	if data[0] != StartOfFrame {
+		return nil, FrameMissingStartOfFrame
+	}
+
+	payloadLength := int(data[1])
+
+	if dataLength < MinimumFrameSize+payloadLength {
+		return nil, FrameTooShort
+	}
+
+	checksum := calculateChecksum(data[1 : dataLength-1])
+
+	if checksum != data[dataLength-1] {
+		return nil, FrameChecksumFailed
+	}
+
+	messageType := MessageType(data[2] >> 5)
+	subSystem := Subsystem(data[2] & 0x1f)
+
+	frame := Frame{
+		MessageType: messageType,
+		Subsystem:   subSystem,
+		CommandID:   data[3],
+		Payload:     data[4 : dataLength-1],
+	}
+
+	return &frame, nil
 }
 
 func calculateChecksum(data []byte) (checksum byte) {
