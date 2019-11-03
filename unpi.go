@@ -14,12 +14,10 @@ type UNPI struct {
 	device io.ReadWriter
 }
 
-func New(device io.ReadWriter) *UNPI {
-	u := &UNPI{device: device}
-
-	return u
-}
-
+// Read reads from the ReadWriter provided to the UNPI struct until it receives
+// a whole UNPI frame. It returns a pointer to the frame, or an error if one
+// was encountered. Error may either be an issue with the structure of the
+// frame or an error raised by the ReadWriter.
 func (u *UNPI) Read() (*Frame, error) {
 	data := []byte{StartOfFrame, 0x00, 0x00, 0x00, 0x00}
 
@@ -58,6 +56,8 @@ func (u *UNPI) seekStartOfFrame() error {
 	return nil
 }
 
+// Write marshalls and writes a UNPI frame to the ReadWriter provided to the UNPI struct.
+// It will return an error if one was encountered while writing to the ReadWriter
 func (u *UNPI) Write(frame *Frame) error {
 	data := frame.Marshall()
 

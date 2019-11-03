@@ -19,7 +19,7 @@ func TestUNPI_Read(t *testing.T) {
 		data := expected.Marshall()
 		device := bytes.NewBuffer(data)
 
-		u := New(device)
+		u := &UNPI{device: device}
 		actual, err := u.Read()
 
 		assert.NoError(t, err)
@@ -38,7 +38,7 @@ func TestUNPI_Read(t *testing.T) {
 		data = append(data, expected.Marshall()...)
 		device := bytes.NewBuffer(data)
 
-		u := New(device)
+		u := &UNPI{device: device}
 		actual, err := u.Read()
 
 		assert.NoError(t, err)
@@ -58,7 +58,7 @@ func TestUNPI_Read(t *testing.T) {
 
 		device := bytes.NewBuffer(data)
 
-		u := New(device)
+		u := &UNPI{device: device}
 		_, err := u.Read()
 
 		assert.Error(t, err)
@@ -68,15 +68,14 @@ func TestUNPI_Read(t *testing.T) {
 	t.Run("test errors raised by reader are raised", func(t *testing.T) {
 		originalError := errors.New("original")
 
-		rw := ControllableReaderWriter{
+		device := ControllableReaderWriter{
 			Reader: func(p []byte) (n int, err error) {
 				return 0, originalError
 			},
 			Writer: nil,
 		}
 
-		u := New(&rw)
-
+		u := &UNPI{device: &device}
 		_, err := u.Read()
 
 		assert.Error(t, err)
@@ -97,7 +96,7 @@ func TestUNPI_Write(t *testing.T) {
 
 		device := bytes.Buffer{}
 
-		u := New(&device)
+		u := &UNPI{device: &device}
 		_ = u.Write(frame)
 
 		assert.Equal(t, expected, device.Bytes())
@@ -108,16 +107,16 @@ func TestUNPI_Write(t *testing.T) {
 
 		originalError := errors.New("original")
 
-		rw := ControllableReaderWriter{
+		device := ControllableReaderWriter{
 			Reader: nil,
 			Writer: func(p []byte) (n int, err error) {
 				return 0, originalError
 			},
 		}
 
-		u := New(&rw)
-
+		u := &UNPI{device: &device}
 		err := u.Write(frame)
+
 		assert.Error(t, err)
 		assert.True(t, errors.Is(err, originalError))
 	})
@@ -125,16 +124,16 @@ func TestUNPI_Write(t *testing.T) {
 	t.Run("test errors raised by writer failing to write whole frame", func(t *testing.T) {
 		frame := &Frame{}
 
-		rw := ControllableReaderWriter{
+		device := ControllableReaderWriter{
 			Reader: nil,
 			Writer: func(p []byte) (n int, err error) {
 				return 2, nil
 			},
 		}
 
-		u := New(&rw)
-
+		u := &UNPI{device: &device}
 		err := u.Write(frame)
+
 		assert.Error(t, err)
 	})
 }

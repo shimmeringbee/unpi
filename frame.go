@@ -57,6 +57,8 @@ type Frame struct {
 
 const StartOfFrame byte = 0xfe
 
+// Marshall constructs a byte array representing the Frame it was called upon, ready for writing directly to the wire,
+// this includes the Start Of Frame header and Checksum.
 func (f *Frame) Marshall() []byte {
 	var buffer bytes.Buffer
 
@@ -83,6 +85,9 @@ var FrameMissingStartOfFrame = errors.New("frame is missing start of frame")
 
 const MinimumFrameSize int = 5
 
+// Unmarshall converts a byte array into a Frame, providing it is valid. Byte array must include Start Of Frame and
+// a checksum, as it would be on the wire.
+// It may return an error if the provided byte array does not correctly represent a frame.
 func UnmarshallFrame(data []byte) (*Frame, error) {
 	dataLength := len(data)
 
