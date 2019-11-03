@@ -1,5 +1,7 @@
 package unpi
 
+import "bytes"
+
 // Constants extracted from:
 // - http://processors.wiki.ti.com/index.php/NPI_Type_SubSystem
 // - http://processors.wiki.ti.com/index.php/Unified_Network_Processor_Interface
@@ -22,7 +24,7 @@ const (
 	MAC                   = 0x02
 	NWK                   = 0x03
 	AF                    = 0x04
-	SDO                   = 0x05
+	ZDO                   = 0x05
 	SAPI                  = 0x06
 	UTIL                  = 0x07
 	DBG                   = 0x08
@@ -48,4 +50,34 @@ type Frame struct {
 	Subsystem   Subsystem
 	CommandID   byte
 	Payload     []byte
+}
+
+const StartOfFrame byte = 0xfe
+
+func (f *Frame) Marshall() []byte {
+	var buffer bytes.Buffer
+
+	buffer.WriteByte(StartOfFrame)
+
+	payloadLength := len(f.Payload)
+	buffer.WriteByte(byte(payloadLength))
+
+	typeSystem := byte(f.MessageType<<5) | byte(f.Subsystem)
+	buffer.WriteByte(typeSystem)
+
+	buffer.WriteByte(f.CommandID)
+	buffer.Write(f.Payload)
+
+	checksum := calculateChecksum(buffer.Bytes()[1:])
+	buffer.WriteByte(checksum)
+
+	return buffer.Bytes()
+}
+
+func calculateChecksum(data []byte) (checksum byte) {
+	for _, b := range data {
+		checksum = checksum ^ b
+	}
+
+	return
 }
