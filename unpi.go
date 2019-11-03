@@ -6,14 +6,19 @@
 
 package unpi // import "github.com/shimmeringbee/unipi"
 
-import "io"
+import (
+	"fmt"
+	"io"
+)
 
 type UNPI struct {
 	device io.ReadWriter
 }
 
 func New(device io.ReadWriter) *UNPI {
-	return nil
+	u := &UNPI{device: device}
+
+	return u
 }
 
 func (u *UNPI) Read() (*Frame, error) {
@@ -21,5 +26,18 @@ func (u *UNPI) Read() (*Frame, error) {
 }
 
 func (u *UNPI) Write(frame *Frame) error {
+	data := frame.Marshall()
+
+	dataSize := len(data)
+	dataWritten, err := u.device.Write(data)
+
+	if err != nil {
+		return err
+	}
+
+	if dataWritten != len(data) {
+		return fmt.Errorf("writer did not accept whole frame, sent %d, written %d", dataSize, dataWritten)
+	}
+
 	return nil
 }
