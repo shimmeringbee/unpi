@@ -31,7 +31,7 @@ complete reimplementation of the library, however it is likely there will be str
 Add an import and most IDEs will `go get` automatically, if it doesn't `go build` will fetch.
 
 ```go
-import "github.com/shimmeringbee/unipi"
+import "github.com/shimmeringbee/unpi"
 ```
 
 ## Usage
@@ -75,7 +75,7 @@ fmt.Printf("%+v\n", frame)
 
 ## Contributing
 
-Feel free to dive in! [Open an issue](https://github.com/shimmeringbee/unipi/issues/new) or submit PRs.
+Feel free to dive in! [Open an issue](https://github.com/shimmeringbee/unpi/issues/new) or submit PRs.
 
 All Shimmering Bee projects follow the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
 

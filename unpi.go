@@ -3,7 +3,7 @@
 //
 // More information available at:
 // http://processors.wiki.ti.com/index.php/Unified_Network_Processor_Interface
-package unpi // import "github.com/shimmeringbee/unipi"
+package unpi // import "github.com/shimmeringbee/unpi"
 
 import (
 	"fmt"
