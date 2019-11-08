@@ -2,6 +2,7 @@
 
 [![license](https://img.shields.io/github/license/shimmeringbee/unpi.svg)](https://github.com/shimmeringbee/unpi/blob/master/LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg)](https://github.com/RichardLitt/standard-readme)
+[![Actions Status](https://github.com/shimmeringbee/unpi/workflows/test/badge.svg)](https://github.com/shimmeringbee/unpi/actions)
 
 > Implementation of Texas Instruments Unified Network Processor Interface frame protocol in Go.
 
