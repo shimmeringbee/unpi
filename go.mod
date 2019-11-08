@@ -1,4 +1,4 @@
-module github.com/shimmeringbee/unipi
+module github.com/shimmeringbee/unpi
 
 go 1.13
 
