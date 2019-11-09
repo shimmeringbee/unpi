@@ -88,27 +88,27 @@ const MinimumFrameSize int = 5
 // Unmarshall converts a byte array into a Frame, providing it is valid. Byte array must include Start Of Frame and
 // a checksum, as it would be on the wire.
 // It may return an error if the provided byte array does not correctly represent a frame.
-func UnmarshallFrame(data []byte) (*Frame, error) {
+func UnmarshallFrame(data []byte) (Frame, error) {
 	dataLength := len(data)
 
 	if dataLength < MinimumFrameSize {
-		return nil, FrameTooShort
+		return Frame{}, FrameTooShort
 	}
 
 	if data[0] != StartOfFrame {
-		return nil, FrameMissingStartOfFrame
+		return Frame{}, FrameMissingStartOfFrame
 	}
 
 	payloadLength := int(data[1])
 
 	if dataLength < MinimumFrameSize+payloadLength {
-		return nil, FrameTooShort
+		return Frame{}, FrameTooShort
 	}
 
 	checksum := calculateChecksum(data[1 : dataLength-1])
 
 	if checksum != data[dataLength-1] {
-		return nil, FrameChecksumFailed
+		return Frame{}, FrameChecksumFailed
 	}
 
 	messageType := MessageType(data[2] >> 5)
@@ -121,7 +121,7 @@ func UnmarshallFrame(data []byte) (*Frame, error) {
 		Payload:     data[4 : dataLength-1],
 	}
 
-	return &frame, nil
+	return frame, nil
 }
 
 func calculateChecksum(data []byte) (checksum byte) {

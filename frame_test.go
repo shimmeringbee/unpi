@@ -66,7 +66,7 @@ func TestUnmarshall(t *testing.T) {
 		actual, err := UnmarshallFrame(asBytes)
 
 		assert.NoError(t, err)
-		assert.Equal(t, &expected, actual)
+		assert.Equal(t, expected, actual)
 	})
 
 	t.Run("unmarshall frame with payload", func(t *testing.T) {
@@ -81,7 +81,7 @@ func TestUnmarshall(t *testing.T) {
 		actual, err := UnmarshallFrame(asBytes)
 
 		assert.NoError(t, err)
-		assert.Equal(t, &expected, actual)
+		assert.Equal(t, expected, actual)
 	})
 
 	t.Run("unmarshall frame with invalid checksum", func(t *testing.T) {

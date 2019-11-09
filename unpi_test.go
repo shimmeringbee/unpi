@@ -22,7 +22,7 @@ func TestUNPI_Read(t *testing.T) {
 		actual, err := Read(device)
 
 		assert.NoError(t, err)
-		assert.Equal(t, &expected, actual)
+		assert.Equal(t, expected, actual)
 	})
 
 	t.Run("test valid frame is decoded prefixed by junk", func(t *testing.T) {
@@ -40,7 +40,7 @@ func TestUNPI_Read(t *testing.T) {
 		actual, err := Read(device)
 
 		assert.NoError(t, err)
-		assert.Equal(t, &expected, actual)
+		assert.Equal(t, expected, actual)
 	})
 
 	t.Run("test frame with invalid checksum raises error", func(t *testing.T) {
@@ -81,7 +81,7 @@ func TestUNPI_Read(t *testing.T) {
 
 func TestUNPI_Write(t *testing.T) {
 	t.Run("test frames are written to device", func(t *testing.T) {
-		frame := &Frame{
+		frame := Frame{
 			MessageType: SREQ,
 			Subsystem:   ZDO,
 			CommandID:   0x37,
@@ -98,7 +98,7 @@ func TestUNPI_Write(t *testing.T) {
 	})
 
 	t.Run("test errors raised by writer are raised", func(t *testing.T) {
-		frame := &Frame{}
+		frame := Frame{}
 
 		originalError := errors.New("original")
 
@@ -116,7 +116,7 @@ func TestUNPI_Write(t *testing.T) {
 	})
 
 	t.Run("test errors raised by writer failing to write whole frame", func(t *testing.T) {
-		frame := &Frame{}
+		frame := Frame{}
 
 		device := ControllableReaderWriter{
 			Reader: nil,

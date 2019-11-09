@@ -14,16 +14,16 @@ import (
 // a whole UNPI frame. It returns a pointer to the frame, or an error if one
 // was encountered. Error may either be an issue with the structure of the
 // frame or an error raised by the ReadWriter.
-func Read(r io.Reader) (*Frame, error) {
+func Read(r io.Reader) (Frame, error) {
 	data := []byte{StartOfFrame, 0x00, 0x00, 0x00, 0x00}
 
 	if err := seekStartOfFrame(r); err != nil {
-		return nil, err
+		return Frame{}, err
 	}
 
 	_, err := io.ReadFull(r, data[1:])
 	if err != nil {
-		return nil, err
+		return Frame{}, err
 	}
 
 	payloadLength := data[1]
@@ -32,7 +32,7 @@ func Read(r io.Reader) (*Frame, error) {
 
 	c, err := io.ReadFull(r, data[5:])
 	if err != nil && c != int(payloadLength) {
-		return nil, err
+		return Frame{}, err
 	}
 
 	return UnmarshallFrame(data)
@@ -54,7 +54,7 @@ func seekStartOfFrame(r io.Reader) error {
 
 // Write marshalls and writes a UNPI frame to the ReadWriter provided to the UNPI struct.
 // It will return an error if one was encountered while writing to the ReadWriter
-func Write(w io.Writer, frame *Frame) error {
+func Write(w io.Writer, frame Frame) error {
 	data := frame.Marshall()
 
 	dataSize := len(data)
