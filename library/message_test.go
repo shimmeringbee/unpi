@@ -9,7 +9,7 @@ import (
 
 func TestMessageLibrary(t *testing.T) {
 	t.Run("verifies that the message library returns false if message not found", func(t *testing.T) {
-		ml := New()
+		ml := NewLibrary()
 
 		_, found := ml.GetByIdentifier(AREQ, SYS, 0xff)
 		assert.False(t, found)
@@ -21,7 +21,7 @@ func TestMessageLibrary(t *testing.T) {
 	})
 
 	t.Run("verifies that registered messages are available", func(t *testing.T) {
-		ml := New()
+		ml := NewLibrary()
 
 		type KnownStruct struct{}
 

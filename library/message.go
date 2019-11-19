@@ -16,7 +16,7 @@ type Identity struct {
 	CommandID   uint8
 }
 
-func New() *Library {
+func NewLibrary() *Library {
 	return &Library{
 		identityToType: make(map[Identity]reflect.Type),
 		typeToIdentity: make(map[reflect.Type]Identity),
