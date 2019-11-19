@@ -9,12 +9,11 @@ import (
 	"github.com/shimmeringbee/unpi/library"
 	"github.com/stretchr/testify/assert"
 	"io"
-	"sync"
 	"testing"
 	"time"
 )
 
-func TestZnp(t *testing.T) {
+func TestBroker(t *testing.T) {
 	t.Run("async outgoing request writes bytes", func(t *testing.T) {
 		writer := bytes.Buffer{}
 		reader := EmptyReader{
@@ -89,39 +88,6 @@ func TestZnp(t *testing.T) {
 		actualError := z.AsyncRequest(f)
 		assert.Error(t, actualError)
 		assert.Equal(t, expectedError, actualError)
-	})
-
-	t.Run("receive frames from unpi", func(t *testing.T) {
-		reader := bytes.Buffer{}
-		writer := bytes.Buffer{}
-
-		expectedFrameOne := unpi.Frame{
-			MessageType: 0,
-			Subsystem:   unpi.ZDO,
-			CommandID:   1,
-			Payload:     []byte{0x78},
-		}
-
-		expectedFrameTwo := unpi.Frame{
-			MessageType: 0,
-			Subsystem:   unpi.SYS,
-			CommandID:   2,
-			Payload:     []byte{},
-		}
-
-		reader.Write(expectedFrameOne.Marshall())
-		reader.Write(expectedFrameTwo.Marshall())
-
-		z := NewBroker(&reader, &writer, nil)
-		defer z.Stop()
-
-		frame, err := z.Receive()
-		assert.NoError(t, err)
-		assert.Equal(t, expectedFrameOne, frame)
-
-		frame, err = z.Receive()
-		assert.NoError(t, err)
-		assert.Equal(t, expectedFrameTwo, frame)
 	})
 
 	t.Run("requesting a sync send with a non sync frame errors", func(t *testing.T) {
@@ -232,106 +198,6 @@ func TestZnp(t *testing.T) {
 		assert.Error(t, actualError)
 		assert.Equal(t, SyncRequestContextCancelled, actualError)
 	})
-
-	t.Run("wait for frame responds to multiple listeners when frame matches", func(t *testing.T) {
-		r, w := io.Pipe()
-		defer w.Close()
-
-		device := ControllableReaderWriter{
-			Writer: func(p []byte) (n int, err error) {
-				return len(p), nil
-			},
-			Reader: func(p []byte) (n int, err error) {
-				return r.Read(p)
-			},
-		}
-
-		z := NewBroker(&device, &device, nil)
-		defer z.Stop()
-
-		expectedFrame := unpi.Frame{
-			MessageType: unpi.AREQ,
-			Subsystem:   unpi.SYS,
-			CommandID:   0x20,
-			Payload:     []byte{},
-		}
-
-		wg := &sync.WaitGroup{}
-
-		for i := 0; i < 2; i++ {
-			wg.Add(1)
-
-			go func() {
-				ctxWithTimeout, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
-				defer cancel()
-				actualFrame, err := z.WaitForFrame(ctxWithTimeout, unpi.AREQ, unpi.SYS, 0x20)
-
-				assert.NoError(t, err)
-				assert.Equal(t, expectedFrame, actualFrame)
-
-				wg.Done()
-			}()
-		}
-
-		time.Sleep(10 * time.Millisecond)
-		data := expectedFrame.Marshall()
-		w.Write(data)
-
-		wg.Wait()
-	})
-
-	t.Run("wait for frame respects context timeout", func(t *testing.T) {
-		reader := EmptyReader{End: make(chan bool)}
-		defer reader.Done()
-
-		writer := bytes.Buffer{}
-
-		z := NewBroker(&reader, &writer, nil)
-		defer z.Stop()
-
-		ctxWithTimeout, cancel := context.WithTimeout(context.Background(), 25*time.Millisecond)
-		defer cancel()
-		_, err := z.WaitForFrame(ctxWithTimeout, unpi.AREQ, unpi.SYS, 0x20)
-
-		assert.Error(t, err)
-		assert.True(t, errors.Is(err, WaitForFrameContextCancelled))
-	})
-
-	t.Run("wait for frame ignores unrelated frames", func(t *testing.T) {
-		r, w := io.Pipe()
-
-		device := ControllableReaderWriter{
-			Writer: func(p []byte) (n int, err error) {
-				return len(p), nil
-			},
-			Reader: func(p []byte) (n int, err error) {
-				return r.Read(p)
-			},
-		}
-
-		z := NewBroker(&device, &device, nil)
-		defer z.Stop()
-
-		expectedFrame := unpi.Frame{
-			MessageType: unpi.AREQ,
-			Subsystem:   unpi.SYS,
-			CommandID:   0x21,
-			Payload:     nil,
-		}
-
-		go func() {
-			time.Sleep(10 * time.Millisecond)
-			data := expectedFrame.Marshall()
-			w.Write(data)
-		}()
-
-		ctxWithTimeout, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
-		defer cancel()
-		_, err := z.WaitForFrame(ctxWithTimeout, unpi.AREQ, unpi.SYS, 0x20)
-
-		assert.Error(t, err)
-		assert.True(t, errors.Is(err, WaitForFrameContextCancelled))
-	})
 }
 
 func TestMessageRequestResponse(t *testing.T) {
@@ -390,7 +256,7 @@ func TestMessageRequestResponse(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
 		defer cancel()
-		err = z.MessageRequestResponse(ctx, sentMessage, &actualReceivedMessage)
+		err = z.RequestResponse(ctx, sentMessage, &actualReceivedMessage)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedMessage, actualReceivedMessage)
@@ -463,7 +329,7 @@ func TestMessageRequestResponse(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
 		defer cancel()
-		err = z.MessageRequestResponse(ctx, sentMessage, &actualReceivedMessage)
+		err = z.RequestResponse(ctx, sentMessage, &actualReceivedMessage)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedMessage, actualReceivedMessage)
