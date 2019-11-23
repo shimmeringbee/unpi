@@ -51,7 +51,6 @@ func TestMockAdapter(t *testing.T) {
 
 	t.Run("mocked response with no return frame does nothing but record", func(t *testing.T) {
 		m := NewMockAdapter()
-
 		m.On(SREQ, ZDO, 0xf0)
 
 		frame := Frame{MessageType: SREQ, Subsystem: ZDO, CommandID: 0xf0, Payload: []byte{0x02, 0x11}}
@@ -59,10 +58,10 @@ func TestMockAdapter(t *testing.T) {
 		err := Write(m, frame)
 		assert.NoError(t, err)
 
-		// Force stop to ensure the Read results in an EOF
 		m.Stop()
 
-		time.Sleep(10 * time.Millisecond)
+		// Force stop to ensure the Read results in an EOF
+		time.Sleep(20 * time.Millisecond)
 
 		_, err = Read(m)
 		assert.Error(t, err)
@@ -220,6 +219,7 @@ func TestMockAdapter(t *testing.T) {
 
 	t.Run("single mocked response with multiple returns will return the correct Frame if repeated", func(t *testing.T) {
 		m := NewMockAdapter()
+		defer m.Stop()
 
 		c := m.On(SREQ, ZDO, 0xf0).Times(2)
 
@@ -231,9 +231,7 @@ func TestMockAdapter(t *testing.T) {
 		err = Write(m, frame)
 		assert.NoError(t, err)
 
-		time.Sleep(5 * time.Millisecond)
-
-		m.Stop()
+		time.Sleep(20 * time.Millisecond)
 
 		assert.Equal(t, 2, len(c.CapturedCalls))
 
@@ -251,5 +249,18 @@ func TestMockAdapter(t *testing.T) {
 		internalT = new(testing.T)
 		c.CapturedCalls[1].AssertAfter(internalT, c.CapturedCalls[0])
 		assert.False(t, internalT.Failed())
+	})
+
+	t.Run("injecting an outgoing frame works", func(t *testing.T) {
+		m := NewMockAdapter()
+		defer m.Stop()
+
+		expectedFrame := Frame{MessageType: SREQ, Subsystem: ZDO, CommandID: 0xf0, Payload: []byte{0x02, 0x11}}
+		m.InjectOutgoing(expectedFrame)
+
+		actualFrame, err := Read(m)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedFrame, actualFrame)
 	})
 }

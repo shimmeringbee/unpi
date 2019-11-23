@@ -1,17 +1,17 @@
 package broker
 
 import (
-	"context"
-	"errors"
 	. "github.com/shimmeringbee/unpi"
-	"log"
+	"sync/atomic"
 )
+
+type ResponseFunction func(Frame)
 
 type awaitMessageRequest struct {
 	MessageType MessageType
 	SubSystem   Subsystem
 	CommandID   byte
-	Response    chan Frame
+	Sequence    uint64
 }
 
 func (b *Broker) handleAwaitMessage(frame Frame) {
@@ -23,41 +23,32 @@ func (b *Broker) handleAwaitMessage(frame Frame) {
 			req.SubSystem == frame.Subsystem &&
 			req.CommandID == frame.CommandID {
 
-			select {
-			case req.Response <- frame:
-			default:
-				log.Println("wait for matched, but no receivers in channel, probably timed out")
-			}
-
+			go b.awaitMessageRequests[req](frame)
 			delete(b.awaitMessageRequests, req)
-			close(req.Response)
 		}
 	}
 }
 
-func (b *Broker) addAwaitMessage(request awaitMessageRequest) {
+func (b *Broker) addAwaitMessage(request awaitMessageRequest, function ResponseFunction) {
 	b.awaitMessageMutex.Lock()
 	defer b.awaitMessageMutex.Unlock()
 
-	b.awaitMessageRequests[request] = true
+	b.awaitMessageRequests[request] = function
 }
 
-var AwaitMessageContextCancelled = errors.New("await message context cancelled")
-
-func (b *Broker) AwaitMessage(ctx context.Context, messageType MessageType, subsystem Subsystem, commandID byte) (Frame, error) {
-	wfr := awaitMessageRequest{
+func (b *Broker) awaitMessage(messageType MessageType, subsystem Subsystem, commandID byte, function ResponseFunction) func() {
+	awaitRequest := awaitMessageRequest{
 		MessageType: messageType,
 		SubSystem:   subsystem,
 		CommandID:   commandID,
-		Response:    make(chan Frame),
+		Sequence:    atomic.AddUint64(b.awaitMessageSequence, 1),
 	}
 
-	b.addAwaitMessage(wfr)
+	b.addAwaitMessage(awaitRequest, function)
 
-	select {
-	case frame := <-wfr.Response:
-		return frame, nil
-	case <-ctx.Done():
-		return Frame{}, AwaitMessageContextCancelled
+	return func() {
+		b.awaitMessageMutex.Lock()
+		defer b.awaitMessageMutex.Unlock()
+		delete(b.awaitMessageRequests, awaitRequest)
 	}
 }

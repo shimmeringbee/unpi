@@ -18,16 +18,7 @@ func (b *Broker) handleReceiving() {
 				return
 			}
 		} else {
-			if frame.MessageType != SRSP {
-				b.handleAwaitMessage(frame)
-				b.asyncReceivingChannel <- frame
-			} else {
-				select {
-				case b.syncReceivingChannel <- frame:
-				default:
-					log.Println("received synchronous response, but no receivers in channel")
-				}
-			}
+			b.handleAwaitMessage(frame)
 		}
 
 		select {
@@ -36,8 +27,4 @@ func (b *Broker) handleReceiving() {
 		default:
 		}
 	}
-}
-
-func (b *Broker) Receive() (Frame, error) {
-	return <-b.asyncReceivingChannel, nil
 }

@@ -159,6 +159,10 @@ func (m *MockAdapter) AssertCalls(t *testing.T) {
 	}
 }
 
+func (m *MockAdapter) InjectOutgoing(f Frame) {
+	m.outgoingFrames <- f
+}
+
 func (m *MockAdapter) handleIncoming() {
 	for {
 		frame, err := Read(m.incomingReader)

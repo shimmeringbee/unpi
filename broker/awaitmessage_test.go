@@ -1,115 +1,66 @@
 package broker
 
 import (
-	"bytes"
-	"context"
-	"errors"
-	"github.com/shimmeringbee/unpi"
+	. "github.com/shimmeringbee/unpi"
+	"github.com/shimmeringbee/unpi/library"
+	testunpi "github.com/shimmeringbee/unpi/testing"
 	"github.com/stretchr/testify/assert"
-	"io"
-	"sync"
 	"testing"
 	"time"
 )
 
 func TestBroker_AwaitMessage(t *testing.T) {
-	t.Run("await message responds to multiple listeners when frame matches", func(t *testing.T) {
-		r, w := io.Pipe()
-		defer w.Close()
+	t.Run("await message calls multiple listeners that match", func(t *testing.T) {
+		ml := library.NewLibrary()
+		m := testunpi.NewMockAdapter()
+		defer m.Stop()
+		b := NewBroker(m, m, ml)
+		defer b.Stop()
 
-		device := ControllableReaderWriter{
-			Writer: func(p []byte) (n int, err error) {
-				return len(p), nil
-			},
-			Reader: func(p []byte) (n int, err error) {
-				return r.Read(p)
-			},
-		}
+		awaitOneMatch := false
+		awaitTwoMatch := false
 
-		z := NewBroker(&device, &device, nil)
-		defer z.Stop()
+		b.awaitMessage(SREQ, SYS, 0x02, func(frame Frame) {
+			awaitOneMatch = true
+		})
 
-		expectedFrame := unpi.Frame{
-			MessageType: unpi.AREQ,
-			Subsystem:   unpi.SYS,
-			CommandID:   0x20,
-			Payload:     []byte{},
-		}
+		b.awaitMessage(SREQ, SYS, 0x02, func(frame Frame) {
+			awaitTwoMatch = true
+		})
 
-		wg := &sync.WaitGroup{}
-
-		for i := 0; i < 2; i++ {
-			wg.Add(1)
-
-			go func() {
-				ctxWithTimeout, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
-				defer cancel()
-				actualFrame, err := z.AwaitMessage(ctxWithTimeout, unpi.AREQ, unpi.SYS, 0x20)
-
-				assert.NoError(t, err)
-				assert.Equal(t, expectedFrame, actualFrame)
-
-				wg.Done()
-			}()
-		}
+		m.InjectOutgoing(Frame{
+			MessageType: SREQ,
+			Subsystem:   SYS,
+			CommandID:   0x02,
+			Payload:     nil,
+		})
 
 		time.Sleep(10 * time.Millisecond)
-		data := expectedFrame.Marshall()
-		w.Write(data)
 
-		wg.Wait()
-	})
-
-	t.Run("await message respects context timeout", func(t *testing.T) {
-		reader := EmptyReader{End: make(chan bool)}
-		defer reader.Done()
-
-		writer := bytes.Buffer{}
-
-		z := NewBroker(&reader, &writer, nil)
-		defer z.Stop()
-
-		ctxWithTimeout, cancel := context.WithTimeout(context.Background(), 25*time.Millisecond)
-		defer cancel()
-		_, err := z.AwaitMessage(ctxWithTimeout, unpi.AREQ, unpi.SYS, 0x20)
-
-		assert.Error(t, err)
-		assert.True(t, errors.Is(err, AwaitMessageContextCancelled))
+		assert.True(t, awaitOneMatch)
+		assert.True(t, awaitTwoMatch)
 	})
 
 	t.Run("await message ignores unrelated frames", func(t *testing.T) {
-		r, w := io.Pipe()
+		ml := library.NewLibrary()
+		m := testunpi.NewMockAdapter()
+		defer m.Stop()
+		b := NewBroker(m, m, ml)
+		defer b.Stop()
 
-		device := ControllableReaderWriter{
-			Writer: func(p []byte) (n int, err error) {
-				return len(p), nil
-			},
-			Reader: func(p []byte) (n int, err error) {
-				return r.Read(p)
-			},
-		}
+		awaitOneMatch := false
 
-		z := NewBroker(&device, &device, nil)
-		defer z.Stop()
+		b.awaitMessage(SREQ, SYS, 0x02, func(frame Frame) {
+			awaitOneMatch = true
+		})
 
-		expectedFrame := unpi.Frame{
-			MessageType: unpi.AREQ,
-			Subsystem:   unpi.SYS,
-			CommandID:   0x21,
+		m.InjectOutgoing(Frame{
+			MessageType: SREQ,
+			Subsystem:   SYS,
+			CommandID:   0x03,
 			Payload:     nil,
-		}
+		})
 
-		go func() {
-			time.Sleep(10 * time.Millisecond)
-			data := expectedFrame.Marshall()
-			w.Write(data)
-		}()
-
-		ctxWithTimeout, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
-		defer cancel()
-		_, err := z.AwaitMessage(ctxWithTimeout, unpi.AREQ, unpi.SYS, 0x20)
-
-		assert.Error(t, err)
-		assert.True(t, errors.Is(err, AwaitMessageContextCancelled))
+		assert.False(t, awaitOneMatch)
 	})
 }
