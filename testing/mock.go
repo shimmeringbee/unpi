@@ -53,8 +53,6 @@ func (cr CallRecord) AssertAfter(t *testing.T, ocr CallRecord) {
 }
 
 type Call struct {
-	sequencer *int64
-
 	mT MessageType
 	s  Subsystem
 	c  byte
@@ -138,7 +136,6 @@ const (
 
 func (m *MockAdapter) On(mT MessageType, s Subsystem, c uint8) *Call {
 	call := &Call{
-		sequencer:     m.sequencer,
 		mT:            mT,
 		s:             s,
 		c:             c,
@@ -192,7 +189,7 @@ func (m *MockAdapter) matchCalls(frame Frame) {
 			}
 
 			call.CapturedCalls = append(call.CapturedCalls, CallRecord{
-				when:  atomic.AddInt64(call.sequencer, 1),
+				when:  atomic.AddInt64(m.sequencer, 1),
 				Frame: frame,
 			})
 
