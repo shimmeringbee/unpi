@@ -86,31 +86,15 @@ func (b *Broker) SyncRequest(ctx context.Context, frame Frame) (Frame, error) {
 	b.syncReceivingMutex.Lock()
 	defer b.syncReceivingMutex.Unlock()
 
-	type FrameOrError struct {
-		Frame Frame
-		Error error
-	}
-
-	ch := make(chan FrameOrError)
-	defer close(ch)
-
-	go func() {
-		select {
-		case frame := <-b.syncReceivingChannel:
-			ch <- FrameOrError{Frame: frame}
-		case <-ctx.Done():
-			ch <- FrameOrError{Error: SyncRequestContextCancelled}
-		default:
-		}
-	}()
-
 	if err := b.writeFrame(frame); err != nil {
 		return Frame{}, err
 	}
 
 	select {
-	case foe := <-ch:
-		return foe.Frame, foe.Error
+	case frame := <-b.syncReceivingChannel:
+		return frame, nil
+	case <-ctx.Done():
+		return Frame{}, SyncRequestContextCancelled
 	}
 }
 
