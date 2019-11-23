@@ -167,7 +167,7 @@ func (m *MockAdapter) handleIncoming() {
 		}
 
 		m.ReceivedFrames = append(m.ReceivedFrames, frame)
-		m.matchCalls(frame)
+		go m.matchCalls(frame)
 
 		select {
 		case <-m.incomingEnd:

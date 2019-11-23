@@ -62,6 +62,8 @@ func TestMockAdapter(t *testing.T) {
 		// Force stop to ensure the Read results in an EOF
 		m.Stop()
 
+		time.Sleep(10 * time.Millisecond)
+
 		_, err = Read(m)
 		assert.Error(t, err)
 		assert.Equal(t, io.EOF, err)
