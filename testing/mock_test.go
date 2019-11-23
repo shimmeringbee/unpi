@@ -263,4 +263,23 @@ func TestMockAdapter(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, expectedFrame, actualFrame)
 	})
+
+	t.Run("mock records unexpected calls and asserts failure", func(t *testing.T) {
+		m := NewMockAdapter()
+		defer m.Stop()
+
+		frame := Frame{MessageType: SREQ, Subsystem: ZDO, CommandID: 0xf0, Payload: []byte{0x02, 0x11}}
+
+		err := Write(m, frame)
+		assert.NoError(t, err)
+
+		time.Sleep(10 * time.Millisecond)
+
+		assert.Equal(t, 1, len(m.UnexpectedCalls))
+		assert.Equal(t, frame, m.UnexpectedCalls[0].Frame)
+
+		internalT := new(testing.T)
+		m.AssertCalls(internalT)
+		assert.True(t, internalT.Failed())
+	})
 }

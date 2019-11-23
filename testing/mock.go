@@ -22,7 +22,8 @@ type MockAdapter struct {
 	outgoingFrames chan Frame
 	outgoingEnd    chan bool
 
-	Calls []*Call
+	Calls           []*Call
+	UnexpectedCalls []CallRecord
 }
 
 type CallRecord struct {
@@ -90,7 +91,8 @@ func NewMockAdapter() *MockAdapter {
 
 		incomingEnd: make(chan bool, 1),
 
-		Calls: []*Call{},
+		Calls:           []*Call{},
+		UnexpectedCalls: []CallRecord{},
 
 		outgoingFrames: make(chan Frame, 50),
 		outgoingEnd:    make(chan bool, 1),
@@ -157,6 +159,16 @@ func (m *MockAdapter) AssertCalls(t *testing.T) {
 			t.Fail()
 		}
 	}
+
+	if len(m.UnexpectedCalls) > 0 {
+		t.Logf("unexpected calls (%d) to mock", len(m.UnexpectedCalls))
+
+		for _, call := range m.UnexpectedCalls {
+			t.Logf("unexpected call: (s: %v mT: %v s: %v c: %v)", call.when, call.Frame.MessageType, call.Frame.Subsystem, call.Frame.CommandID)
+		}
+
+		t.Fail()
+	}
 }
 
 func (m *MockAdapter) InjectOutgoing(f Frame) {
@@ -182,23 +194,31 @@ func (m *MockAdapter) handleIncoming() {
 }
 
 func (m *MockAdapter) matchCalls(frame Frame) {
+	found := false
+	cr := CallRecord{
+		when:  atomic.AddInt64(m.sequencer, 1),
+		Frame: frame,
+	}
+
 	for _, call := range m.Calls {
 		if (call.mT == frame.MessageType || call.mT == AnyType) &&
 			(call.s == frame.Subsystem || call.s == AnySubsystem) &&
 			(call.c == frame.CommandID || call.c == AnyCommand) {
+
+			found = true
 
 			if len(call.returnFrames) > 0 {
 				i := call.actualCalls % len(call.returnFrames)
 				m.outgoingFrames <- call.returnFrames[i]
 			}
 
-			call.CapturedCalls = append(call.CapturedCalls, CallRecord{
-				when:  atomic.AddInt64(m.sequencer, 1),
-				Frame: frame,
-			})
-
+			call.CapturedCalls = append(call.CapturedCalls, cr)
 			call.actualCalls += 1
 		}
+	}
+
+	if !found {
+		m.UnexpectedCalls = append(m.UnexpectedCalls, cr)
 	}
 }
 
