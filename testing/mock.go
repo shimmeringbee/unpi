@@ -153,7 +153,7 @@ func (m *MockAdapter) On(mT MessageType, s Subsystem, c uint8) *Call {
 func (m *MockAdapter) AssertCalls(t *testing.T) {
 	for _, call := range m.Calls {
 		if call.expectedCalls != call.actualCalls && call.expectedCalls != math.MinInt64 {
-			t.Logf("call count mismatch (mT: %v s: %v c: %v): expected (%d) != actual(%d)", call.mT, call.s, call.c, call.expectedCalls, call.actualCalls)
+			t.Logf("call count mismatch (mT: %v s: %v c: %v): expected(%d) != actual(%d)", call.mT, call.s, call.c, call.expectedCalls, call.actualCalls)
 			t.Fail()
 		}
 	}
