@@ -216,3 +216,66 @@ func TestBroker_Await(t *testing.T) {
 		m.AssertCalls(t)
 	})
 }
+
+func TestBroker_Subscribe(t *testing.T) {
+	t.Run("subscribe errors if message type is unrecognised", func(t *testing.T) {
+		ml := library.NewLibrary()
+
+		type Message struct {
+			Value uint8
+		}
+
+		m := testunpi.NewMockAdapter()
+		defer m.Stop()
+		b := NewBroker(m, m, ml)
+		defer b.Stop()
+
+		err, subCancel := b.Subscribe(&Message{}, func(v func(interface{}) error) {})
+		defer subCancel()
+
+		assert.Error(t, err)
+		assert.Equal(t, ResponseMessageNotInLibrary, err)
+
+		m.AssertCalls(t)
+	})
+
+	t.Run("subscribe calls callback if message is found", func(t *testing.T) {
+		ml := library.NewLibrary()
+
+		type Message struct {
+			Value uint8
+		}
+
+		ml.Add(AREQ, SYS, 0x02, Message{})
+
+		m := testunpi.NewMockAdapter()
+		defer m.Stop()
+		b := NewBroker(m, m, ml)
+		defer b.Stop()
+
+		called := 0
+
+		err, subCancel := b.Subscribe(Message{}, func(unmarshall func(v interface{}) error) {
+			msg := Message{}
+			_ = unmarshall(&msg)
+
+			assert.Equal(t, uint8(0x55), msg.Value)
+			called += 1
+		})
+		defer subCancel()
+
+		m.InjectOutgoing(Frame{
+			MessageType: AREQ,
+			Subsystem:   SYS,
+			CommandID:   0x02,
+			Payload:     []byte{0x55},
+		})
+
+		time.Sleep(10 * time.Millisecond)
+
+		assert.NoError(t, err)
+		assert.Equal(t, 1, called)
+
+		m.AssertCalls(t)
+	})
+}

@@ -101,3 +101,19 @@ func (b *Broker) Await(ctx context.Context, resp interface{}) error {
 
 	return nil
 }
+
+func (b *Broker) Subscribe(message interface{}, callback func(unmarshall func(v interface{}) error)) (error, func()) {
+	msgIdentity, msgFound := b.messageLibrary.GetByObject(message)
+
+	if !msgFound {
+		return ResponseMessageNotInLibrary, func() {}
+	}
+
+	cancelAwait := b.listen(msgIdentity.MessageType, msgIdentity.Subsystem, msgIdentity.CommandID, func(f Frame) {
+		callback(func(v interface{}) error {
+			return bytecodec.Unmarshall(f.Payload, v)
+		})
+	})
+
+	return nil, cancelAwait
+}

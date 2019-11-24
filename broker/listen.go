@@ -24,7 +24,6 @@ func (b *Broker) handleListeners(frame Frame) {
 			req.CommandID == frame.CommandID {
 
 			go b.listenRequests[req](frame)
-			delete(b.listenRequests, req)
 		}
 	}
 }
