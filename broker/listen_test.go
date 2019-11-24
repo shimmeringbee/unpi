@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-func TestBroker_internalAwaitMessage(t *testing.T) {
-	t.Run("await message calls multiple listeners that match", func(t *testing.T) {
+func TestBroker_listen(t *testing.T) {
+	t.Run("listen calls multiple listeners that match", func(t *testing.T) {
 		ml := library.NewLibrary()
 		m := testunpi.NewMockAdapter()
 		defer m.Stop()
@@ -41,7 +41,7 @@ func TestBroker_internalAwaitMessage(t *testing.T) {
 		assert.True(t, awaitTwoMatch)
 	})
 
-	t.Run("await message ignores unrelated frames", func(t *testing.T) {
+	t.Run("listen ignores unrelated frames", func(t *testing.T) {
 		ml := library.NewLibrary()
 		m := testunpi.NewMockAdapter()
 		defer m.Stop()
