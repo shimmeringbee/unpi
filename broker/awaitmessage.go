@@ -36,7 +36,7 @@ func (b *Broker) addAwaitMessage(request awaitMessageRequest, function ResponseF
 	b.awaitMessageRequests[request] = function
 }
 
-func (b *Broker) awaitMessage(messageType MessageType, subsystem Subsystem, commandID byte, function ResponseFunction) func() {
+func (b *Broker) internalAwaitMessage(messageType MessageType, subsystem Subsystem, commandID byte, function ResponseFunction) func() {
 	awaitRequest := awaitMessageRequest{
 		MessageType: messageType,
 		SubSystem:   subsystem,

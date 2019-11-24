@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func TestBroker_AwaitMessage(t *testing.T) {
+func TestBroker_internalAwaitMessage(t *testing.T) {
 	t.Run("await message calls multiple listeners that match", func(t *testing.T) {
 		ml := library.NewLibrary()
 		m := testunpi.NewMockAdapter()
@@ -20,11 +20,11 @@ func TestBroker_AwaitMessage(t *testing.T) {
 		awaitOneMatch := false
 		awaitTwoMatch := false
 
-		b.awaitMessage(SREQ, SYS, 0x02, func(frame Frame) {
+		b.internalAwaitMessage(SREQ, SYS, 0x02, func(frame Frame) {
 			awaitOneMatch = true
 		})
 
-		b.awaitMessage(SREQ, SYS, 0x02, func(frame Frame) {
+		b.internalAwaitMessage(SREQ, SYS, 0x02, func(frame Frame) {
 			awaitTwoMatch = true
 		})
 
@@ -50,7 +50,7 @@ func TestBroker_AwaitMessage(t *testing.T) {
 
 		awaitOneMatch := false
 
-		b.awaitMessage(SREQ, SYS, 0x02, func(frame Frame) {
+		b.internalAwaitMessage(SREQ, SYS, 0x02, func(frame Frame) {
 			awaitOneMatch = true
 		})
 

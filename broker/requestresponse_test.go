@@ -128,3 +128,91 @@ func TestRequestResponse(t *testing.T) {
 		m.AssertCalls(t)
 	})
 }
+
+func TestBroker_Await(t *testing.T) {
+	t.Run("awaits a message", func(t *testing.T) {
+		ml := library.NewLibrary()
+
+		type Response struct {
+			Value uint8
+		}
+
+		ml.Add(AREQ, SYS, 0x02, Response{})
+
+		m := testunpi.NewMockAdapter()
+		defer m.Stop()
+		b := NewBroker(m, m, ml)
+		defer b.Stop()
+
+		expectedResponse := Response{Value: 0x42}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+		defer cancel()
+
+		go func() {
+			time.Sleep(10 * time.Millisecond)
+			m.InjectOutgoing(Frame{
+				MessageType: AREQ,
+				Subsystem:   SYS,
+				CommandID:   0x02,
+				Payload:     []byte{0x42},
+			})
+		}()
+
+		actualResponse := Response{}
+		err := b.Await(ctx, &actualResponse)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedResponse, actualResponse)
+
+		m.AssertCalls(t)
+	})
+
+	t.Run("awaits errors if response type is unrecognised", func(t *testing.T) {
+		ml := library.NewLibrary()
+
+		type Response struct {
+			Value uint8
+		}
+
+		m := testunpi.NewMockAdapter()
+		defer m.Stop()
+		b := NewBroker(m, m, ml)
+		defer b.Stop()
+
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+		defer cancel()
+
+		err := b.Await(ctx, &Response{})
+
+		assert.Error(t, err)
+		assert.Equal(t, ResponseMessageNotInLibrary, err)
+
+		m.AssertCalls(t)
+	})
+
+	t.Run("awaits errors if context deadline passes", func(t *testing.T) {
+		ml := library.NewLibrary()
+
+		type Response struct {
+			Value uint8
+		}
+
+		ml.Add(AREQ, SYS, 0x02, Response{})
+
+		m := testunpi.NewMockAdapter()
+		defer m.Stop()
+		b := NewBroker(m, m, ml)
+		defer b.Stop()
+
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
+		defer cancel()
+
+		err := b.Await(ctx, &Response{})
+
+		assert.Error(t, err)
+		assert.Equal(t, ContextCancelled, err)
+
+		m.AssertCalls(t)
+	})
+}

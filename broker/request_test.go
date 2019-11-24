@@ -6,10 +6,11 @@ import (
 	testunpi "github.com/shimmeringbee/unpi/testing"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestRequest(t *testing.T) {
-	t.Run("sends asynchronous request and waits for the response", func(t *testing.T) {
+	t.Run("sends asynchronous request", func(t *testing.T) {
 		ml := library.NewLibrary()
 
 		type Request struct{}
@@ -25,6 +26,8 @@ func TestRequest(t *testing.T) {
 
 		request := Request{}
 		err := b.Request(request)
+
+		time.Sleep(10 * time.Millisecond)
 
 		assert.NoError(t, err)
 
