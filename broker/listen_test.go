@@ -20,11 +20,11 @@ func TestBroker_internalAwaitMessage(t *testing.T) {
 		awaitOneMatch := false
 		awaitTwoMatch := false
 
-		b.internalAwaitMessage(SREQ, SYS, 0x02, func(frame Frame) {
+		b.listen(SREQ, SYS, 0x02, func(frame Frame) {
 			awaitOneMatch = true
 		})
 
-		b.internalAwaitMessage(SREQ, SYS, 0x02, func(frame Frame) {
+		b.listen(SREQ, SYS, 0x02, func(frame Frame) {
 			awaitTwoMatch = true
 		})
 
@@ -50,7 +50,7 @@ func TestBroker_internalAwaitMessage(t *testing.T) {
 
 		awaitOneMatch := false
 
-		b.internalAwaitMessage(SREQ, SYS, 0x02, func(frame Frame) {
+		b.listen(SREQ, SYS, 0x02, func(frame Frame) {
 			awaitOneMatch = true
 		})
 

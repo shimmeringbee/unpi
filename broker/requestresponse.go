@@ -44,7 +44,7 @@ func (b *Broker) RequestResponse(ctx context.Context, req interface{}, resp inte
 	ch := make(chan Frame, 1)
 	defer close(ch)
 
-	cancelAwait := b.internalAwaitMessage(respIdentity.MessageType, respIdentity.Subsystem, respIdentity.CommandID, func(f Frame) {
+	cancelAwait := b.listen(respIdentity.MessageType, respIdentity.Subsystem, respIdentity.CommandID, func(f Frame) {
 		ch <- f
 	})
 	defer cancelAwait()
@@ -80,7 +80,7 @@ func (b *Broker) Await(ctx context.Context, resp interface{}) error {
 	ch := make(chan Frame, 1)
 	defer close(ch)
 
-	cancelAwait := b.internalAwaitMessage(respIdentity.MessageType, respIdentity.Subsystem, respIdentity.CommandID, func(f Frame) {
+	cancelAwait := b.listen(respIdentity.MessageType, respIdentity.Subsystem, respIdentity.CommandID, func(f Frame) {
 		ch <- f
 	})
 	defer cancelAwait()

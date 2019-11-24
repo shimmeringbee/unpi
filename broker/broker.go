@@ -16,9 +16,9 @@ type Broker struct {
 	syncReceivingMutex *sync.Mutex
 	receivingEnd       chan bool
 
-	awaitMessageMutex    *sync.Mutex
+	listenMutex          *sync.Mutex
 	awaitMessageSequence *uint64
-	awaitMessageRequests map[awaitMessageRequest]ResponseFunction
+	listenRequests       map[listenRequest]ResponseFunction
 
 	messageLibrary *Library
 }
@@ -37,9 +37,9 @@ func NewBroker(reader io.Reader, writer io.Writer, ml *Library) *Broker {
 
 		syncReceivingMutex: &sync.Mutex{},
 
-		awaitMessageMutex:    &sync.Mutex{},
+		listenMutex:          &sync.Mutex{},
 		awaitMessageSequence: new(uint64),
-		awaitMessageRequests: map[awaitMessageRequest]ResponseFunction{},
+		listenRequests:       map[listenRequest]ResponseFunction{},
 
 		messageLibrary: ml,
 	}

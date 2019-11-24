@@ -18,7 +18,7 @@ func (b *Broker) handleReceiving() {
 				return
 			}
 		} else {
-			b.handleAwaitMessage(frame)
+			b.handleListeners(frame)
 		}
 
 		select {
