@@ -219,7 +219,7 @@ func TestMockAdapter(t *testing.T) {
 		assert.False(t, internalT.Failed())
 	})
 
-	t.Run("single mocked response with multiple returns will return the correct Frame if repeated", func(t *testing.T) {
+	t.Run("multiple writes to the mock are captures and ordering is correct", func(t *testing.T) {
 		m := NewMockAdapter()
 		defer m.Stop()
 
@@ -233,7 +233,7 @@ func TestMockAdapter(t *testing.T) {
 		err = Write(m, frame)
 		assert.NoError(t, err)
 
-		time.Sleep(20 * time.Millisecond)
+		time.Sleep(50 * time.Millisecond)
 
 		assert.Equal(t, 2, len(c.CapturedCalls))
 
