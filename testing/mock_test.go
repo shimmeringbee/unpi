@@ -21,6 +21,8 @@ func TestMockAdapter_ReceivingFrames(t *testing.T) {
 		err = Write(m, expectedFrame)
 		assert.NoError(t, err)
 
+		time.Sleep(10 * time.Millisecond)
+
 		assert.Equal(t, 2, len(m.ReceivedFrames))
 		assert.Equal(t, expectedFrame, m.ReceivedFrames[0])
 		assert.Equal(t, expectedFrame, m.ReceivedFrames[1])
