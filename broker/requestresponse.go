@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/shimmeringbee/bytecodec"
 	. "github.com/shimmeringbee/unpi"
+	"log"
 )
 
 var ContextCancelled = errors.New("context cancelled")
@@ -102,18 +103,41 @@ func (b *Broker) Await(ctx context.Context, resp interface{}) error {
 	return nil
 }
 
-func (b *Broker) Subscribe(message interface{}, callback func(unmarshall func(v interface{}) error)) (error, func()) {
+func (b *Broker) Subscribe(message interface{}, callback func(v interface{})) (error, func()) {
 	msgIdentity, msgFound := b.messageLibrary.GetByObject(message)
 
 	if !msgFound {
 		return ResponseMessageNotInLibrary, func() {}
 	}
 
+	ch := make(chan Frame)
+	done := make(chan bool)
+
+	go func() {
+		for {
+			select {
+			case f := <- ch:
+				err := bytecodec.Unmarshall(f.Payload, message)
+
+				if err != nil {
+					log.Printf("failed to unmarshal: %+v", err)
+				} else {
+					callback(message)
+				}
+			case <- done:
+				return
+			}
+		}
+	}()
+
 	cancelAwait := b.listen(msgIdentity.MessageType, msgIdentity.Subsystem, msgIdentity.CommandID, func(f Frame) {
-		callback(func(v interface{}) error {
-			return bytecodec.Unmarshall(f.Payload, v)
-		})
+		ch <- f
 	})
 
-	return nil, cancelAwait
+	return nil, func() {
+		cancelAwait()
+		done <- true
+		close(done)
+		close(ch)
+	}
 }

@@ -230,7 +230,7 @@ func TestBroker_Subscribe(t *testing.T) {
 		b := NewBroker(m, m, ml)
 		defer b.Stop()
 
-		err, subCancel := b.Subscribe(&Message{}, func(v func(interface{}) error) {})
+		err, subCancel := b.Subscribe(&Message{}, func(v interface{}) {})
 		defer subCancel()
 
 		assert.Error(t, err)
@@ -239,7 +239,7 @@ func TestBroker_Subscribe(t *testing.T) {
 		m.AssertCalls(t)
 	})
 
-	t.Run("subscribe calls callback if message is found", func(t *testing.T) {
+	t.Run("subscribe callbacks if message has been found", func(t *testing.T) {
 		ml := library.NewLibrary()
 
 		type Message struct {
@@ -255,9 +255,8 @@ func TestBroker_Subscribe(t *testing.T) {
 
 		called := 0
 
-		err, subCancel := b.Subscribe(Message{}, func(unmarshall func(v interface{}) error) {
-			msg := Message{}
-			_ = unmarshall(&msg)
+		err, subCancel := b.Subscribe(&Message{}, func(v interface{}) {
+			msg := v.(*Message)
 
 			assert.Equal(t, uint8(0x55), msg.Value)
 			called += 1
