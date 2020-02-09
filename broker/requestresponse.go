@@ -3,9 +3,11 @@ package broker
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/shimmeringbee/bytecodec"
 	. "github.com/shimmeringbee/unpi"
 	"log"
+	"reflect"
 )
 
 var ContextCancelled = errors.New("context cancelled")
@@ -110,34 +112,37 @@ func (b *Broker) Subscribe(message interface{}, callback func(v interface{})) (e
 		return ResponseMessageNotInLibrary, func() {}
 	}
 
-	ch := make(chan Frame)
-	done := make(chan bool)
+	cancelAwait := b.listen(msgIdentity.MessageType, msgIdentity.Subsystem, msgIdentity.CommandID, func(f Frame) {
+		copiedMessage, err := copyInterface(message)
 
-	go func() {
-		for {
-			select {
-			case f := <- ch:
-				err := bytecodec.Unmarshall(f.Payload, message)
+		if err != nil {
+			log.Printf("could not copy message for a callback: %+v", err)
+		} else {
+			err := bytecodec.Unmarshall(f.Payload, copiedMessage)
 
-				if err != nil {
-					log.Printf("failed to unmarshal: %+v", err)
-				} else {
-					callback(message)
-				}
-			case <- done:
-				return
+			if err != nil {
+				log.Printf("failed to unmarshal: %+v", err)
+			} else {
+				callback(copiedMessage)
 			}
 		}
-	}()
-
-	cancelAwait := b.listen(msgIdentity.MessageType, msgIdentity.Subsystem, msgIdentity.CommandID, func(f Frame) {
-		ch <- f
 	})
 
-	return nil, func() {
-		cancelAwait()
-		done <- true
-		close(done)
-		close(ch)
+	return nil, cancelAwait
+}
+
+func copyInterface(source interface{}) (interface{}, error) {
+	v := reflect.ValueOf(source)
+
+	switch v.Kind() {
+	case reflect.Struct:
+		sourceValue := reflect.New(v.Type()).Elem()
+		return sourceValue.Interface(), nil
+	case reflect.Ptr:
+		e := v.Elem()
+		sourceValue := reflect.New(e.Type())
+		return sourceValue.Interface(), nil
+	default:
+		return nil, fmt.Errorf("unable to copy interface: %+v", v.Kind())
 	}
 }
