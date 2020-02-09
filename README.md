@@ -23,9 +23,9 @@ this library was written to support the CC253X series of Zigbee sniffers flashed
 
 More information about UNPI is available from [Texas Instruments](http://processors.wiki.ti.com/index.php/Unified_Network_Processor_Interface) directly.
 
-[Another implementation](https://github.com/dyrkin/unp-go/) of UNPI exists for Golang, however it holds [no licence and 
-communication attempts](https://github.com/dyrkin/zigbee-steward/issues/1) with the author have failed. This is a
-complete reimplementation of the library, however it is likely there will be strong coincidences due to Golang standards.
+[Another implementation](https://github.com/dyrkin/unp-go/) of UNPI exists for Golang, it did [hold no license for a period](https://github.com/dyrkin/zigbee-steward/issues/1)
+and the author could not be contacted. This has been rectified, so it may be of interest you. This is a complete
+reimplementation of the library, however it is likely there will be strong coincidences due to Golang standards.
 
 ## Install
 
