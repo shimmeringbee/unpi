@@ -31,7 +31,7 @@ func TestRequestResponse(t *testing.T) {
 		defer b.Stop()
 
 		expectedResponse := Response{Value: 42}
-		data, _ := bytecodec.Marshall(expectedResponse)
+		data, _ := bytecodec.Marshal(expectedResponse)
 
 		m.On(AREQ, SYS, 0x01).Return(Frame{
 			MessageType: AREQ,
@@ -73,7 +73,7 @@ func TestRequestResponse(t *testing.T) {
 		defer b.Stop()
 
 		expectedResponse := Response{Value: 42}
-		data, _ := bytecodec.Marshall(expectedResponse)
+		data, _ := bytecodec.Marshal(expectedResponse)
 
 		m.On(SREQ, SYS, 0x01).Return(Frame{
 			MessageType: SRSP,

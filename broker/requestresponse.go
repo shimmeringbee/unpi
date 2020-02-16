@@ -26,7 +26,7 @@ func (b *Broker) RequestResponse(ctx context.Context, req interface{}, resp inte
 		return ResponseMessageNotInLibrary
 	}
 
-	requestPayload, err := bytecodec.Marshall(req)
+	requestPayload, err := bytecodec.Marshal(req)
 
 	if err != nil {
 		return err
@@ -64,7 +64,7 @@ func (b *Broker) RequestResponse(ctx context.Context, req interface{}, resp inte
 		return ContextCancelled
 	}
 
-	err = bytecodec.Unmarshall(f.Payload, resp)
+	err = bytecodec.Unmarshal(f.Payload, resp)
 
 	if err != nil {
 		return err
@@ -96,7 +96,7 @@ func (b *Broker) Await(ctx context.Context, resp interface{}) error {
 		return ContextCancelled
 	}
 
-	err := bytecodec.Unmarshall(f.Payload, resp)
+	err := bytecodec.Unmarshal(f.Payload, resp)
 
 	if err != nil {
 		return err
@@ -118,7 +118,7 @@ func (b *Broker) Subscribe(message interface{}, callback func(v interface{})) (e
 		if err != nil {
 			log.Printf("could not copy message for a callback: %+v", err)
 		} else {
-			err := bytecodec.Unmarshall(f.Payload, copiedMessage)
+			err := bytecodec.Unmarshal(f.Payload, copiedMessage)
 
 			if err != nil {
 				log.Printf("failed to unmarshal: %+v", err)

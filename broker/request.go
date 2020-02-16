@@ -17,7 +17,7 @@ func (b *Broker) Request(req interface{}) error {
 		return errors.New("synchronous messages cannot be sent one shot")
 	}
 
-	requestPayload, err := bytecodec.Marshall(req)
+	requestPayload, err := bytecodec.Marshal(req)
 
 	if err != nil {
 		return err
