@@ -37,6 +37,8 @@ import "github.com/shimmeringbee/unpi"
 
 ## Usage
 
+**This libraries API is unstable and should not yet be relied upon.**
+
 ### Writing
 
 ```go
