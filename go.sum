@@ -2,10 +2,6 @@ github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/shimmeringbee/bytecodec v0.0.0-20191116111328-f873abddc0ca h1:YVp0qaNSt+J34gXJ4C0nRr6xuRcKF+B+GlCMjsDOQwg=
-github.com/shimmeringbee/bytecodec v0.0.0-20191116111328-f873abddc0ca/go.mod h1:J/gvzi9IgGBHP1cBn++bqJ4tchSbgS10N2lmGMlqD3M=
-github.com/shimmeringbee/bytecodec v0.0.0-20200216095833-c6062a8149ad h1:QRvb9LbOe8N0Mre3/BXnkdnTYi2OMupw95TWTejNaE4=
-github.com/shimmeringbee/bytecodec v0.0.0-20200216095833-c6062a8149ad/go.mod h1:J/gvzi9IgGBHP1cBn++bqJ4tchSbgS10N2lmGMlqD3M=
 github.com/shimmeringbee/bytecodec v0.0.0-20200216120857-49d677293817 h1:rxW12QzHtMYEZNTQ3/GxhquLP+H+t61Mbx0SCFtOLLs=
 github.com/shimmeringbee/bytecodec v0.0.0-20200216120857-49d677293817/go.mod h1:J/gvzi9IgGBHP1cBn++bqJ4tchSbgS10N2lmGMlqD3M=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
