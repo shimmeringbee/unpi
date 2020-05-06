@@ -1,6 +1,6 @@
 module github.com/shimmeringbee/unpi
 
-go 1.13
+go 1.14
 
 require (
 	github.com/shimmeringbee/bytecodec v0.0.0-20200216120857-49d677293817
