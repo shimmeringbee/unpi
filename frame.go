@@ -37,6 +37,7 @@ const (
 	RCN_CLIENT  Subsystem = 0x0c
 	BOOT        Subsystem = 0x0d
 	ZIPTEST     Subsystem = 0x0e
+	APP_CNF     Subsystem = 0x0f
 	DEBUG       Subsystem = 0x0f
 	PERIPHERALS Subsystem = 0x10
 	NFC         Subsystem = 0x11
