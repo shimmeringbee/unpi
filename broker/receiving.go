@@ -5,6 +5,7 @@ import (
 	. "github.com/shimmeringbee/unpi"
 	"io"
 	"log"
+	"syscall"
 )
 
 func (b *Broker) handleReceiving() {
@@ -12,6 +13,13 @@ func (b *Broker) handleReceiving() {
 		frame, err := Read(b.reader)
 
 		if err != nil {
+			switch e := err.(type) {
+			case syscall.Errno:
+				if e == syscall.EINTR {
+					continue
+				}
+			}
+
 			log.Printf("unpi read failed: %v\n", err)
 
 			if errors.Is(err, io.EOF) {
