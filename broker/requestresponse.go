@@ -47,7 +47,10 @@ func (b *Broker) RequestResponse(ctx context.Context, req interface{}, resp inte
 	ch := make(chan Frame, 1)
 
 	cancelAwait := b.listen(respIdentity.MessageType, respIdentity.Subsystem, respIdentity.CommandID, func(f Frame) {
-		ch <- f
+		select {
+		case ch <- f:
+		default:
+		}
 	})
 
 	defer func() {
