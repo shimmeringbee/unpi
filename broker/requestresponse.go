@@ -45,12 +45,15 @@ func (b *Broker) RequestResponse(ctx context.Context, req interface{}, resp inte
 	}
 
 	ch := make(chan Frame, 1)
-	defer close(ch)
 
 	cancelAwait := b.listen(respIdentity.MessageType, respIdentity.Subsystem, respIdentity.CommandID, func(f Frame) {
 		ch <- f
 	})
-	defer cancelAwait()
+
+	defer func() {
+		cancelAwait()
+		close(ch)
+	}()
 
 	if err := b.writeFrame(requestFrame); err != nil {
 		return err
