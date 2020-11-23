@@ -87,12 +87,18 @@ func (b *Broker) Await(ctx context.Context, resp interface{}) error {
 	}
 
 	ch := make(chan Frame, 1)
-	defer close(ch)
 
 	cancelAwait := b.listen(respIdentity.MessageType, respIdentity.Subsystem, respIdentity.CommandID, func(f Frame) {
-		ch <- f
+		select {
+		case ch <- f:
+		default:
+		}
 	})
-	defer cancelAwait()
+
+	defer func() {
+		cancelAwait()
+		close(ch)
+	}()
 
 	var f Frame
 
