@@ -46,10 +46,15 @@ func (b *Broker) RequestResponse(ctx context.Context, req interface{}, resp inte
 
 	ch := make(chan Frame, 1)
 
+	oneShot := false
+
 	cancelAwait := b.listen(respIdentity.MessageType, respIdentity.Subsystem, respIdentity.CommandID, func(f Frame) {
-		select {
-		case ch <- f:
-		default:
+		if !oneShot {
+			oneShot = true
+			select {
+			case ch <- f:
+			default:
+			}
 		}
 	})
 
