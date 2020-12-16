@@ -46,24 +46,19 @@ func (b *Broker) RequestResponse(ctx context.Context, req interface{}, resp inte
 	}
 
 	ch := make(chan Frame, 1)
-
-	oneShot := false
-	oneShotMutex := &sync.Mutex{}
+	once := sync.Once{}
 
 	cancelAwait := b.listen(respIdentity.MessageType, respIdentity.Subsystem, respIdentity.CommandID, func(f Frame) {
-		oneShotMutex.Lock()
-		defer oneShotMutex.Unlock()
-
-		if !oneShot {
-			oneShot = true
+		once.Do(func() {
 			select {
 			case ch <- f:
 			default:
 			}
-		}
+		})
 	})
 
 	defer func() {
+		once.Do(func() {})
 		cancelAwait()
 		close(ch)
 	}()
@@ -97,24 +92,19 @@ func (b *Broker) Await(ctx context.Context, resp interface{}) error {
 	}
 
 	ch := make(chan Frame, 1)
-
-	oneShot := false
-	oneShotMutex := &sync.Mutex{}
+	once := sync.Once{}
 
 	cancelAwait := b.listen(respIdentity.MessageType, respIdentity.Subsystem, respIdentity.CommandID, func(f Frame) {
-		oneShotMutex.Lock()
-		defer oneShotMutex.Unlock()
-
-		if !oneShot {
-			oneShot = true
+		once.Do(func() {
 			select {
 			case ch <- f:
 			default:
 			}
-		}
+		})
 	})
 
 	defer func() {
+		once.Do(func() {})
 		cancelAwait()
 		close(ch)
 	}()

@@ -18,12 +18,12 @@ func (b *Broker) handleListeners(frame Frame) {
 	b.listenMutex.Lock()
 	defer b.listenMutex.Unlock()
 
-	for req, _ := range b.listenRequests {
+	for req, fn := range b.listenRequests {
 		if req.MessageType == frame.MessageType &&
 			req.SubSystem == frame.Subsystem &&
 			req.CommandID == frame.CommandID {
 
-			go b.listenRequests[req](frame)
+			go fn(frame)
 		}
 	}
 }
