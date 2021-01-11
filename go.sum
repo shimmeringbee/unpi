@@ -4,6 +4,9 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/shimmeringbee/bytecodec v0.0.0-20200216120857-49d677293817 h1:rxW12QzHtMYEZNTQ3/GxhquLP+H+t61Mbx0SCFtOLLs=
 github.com/shimmeringbee/bytecodec v0.0.0-20200216120857-49d677293817/go.mod h1:J/gvzi9IgGBHP1cBn++bqJ4tchSbgS10N2lmGMlqD3M=
+github.com/shimmeringbee/bytecodec v0.0.0-20210111165458-877359ca1003 h1:DpsCmN0jkxcOlNZS3VpCJOQrjeZGXeKqGGQUpuEBtMM=
+github.com/shimmeringbee/bytecodec v0.0.0-20210111165458-877359ca1003/go.mod h1:iqI5PkiqY+Xq6Hu22TNhepAY00iJCfk9jiXKBUrMSQQ=
+github.com/shimmeringbee/unpi v0.0.0-20210111165207-f0210c6942fc/go.mod h1:iAt5R5HT+VC7B9U77uBmN5Z6+DJo4U0z6ag68NH2mMw=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJyk=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
