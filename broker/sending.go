@@ -11,7 +11,7 @@ func (b *Broker) handleSending() {
 	for {
 		select {
 		case outgoing := <-b.sendingChannel:
-			outgoing.ErrorChannel <- Write(b.writer, outgoing.Frame)
+			outgoing.ErrorChannel <- b.FrameWriter(b.writer, outgoing.Frame)
 		case <-b.sendingEnd:
 			return
 		}

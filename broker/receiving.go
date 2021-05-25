@@ -2,7 +2,6 @@ package broker
 
 import (
 	"errors"
-	. "github.com/shimmeringbee/unpi"
 	"io"
 	"log"
 	"syscall"
@@ -10,7 +9,7 @@ import (
 
 func (b *Broker) handleReceiving() {
 	for {
-		frame, err := Read(b.reader)
+		frame, err := b.FrameReader(b.reader)
 
 		if err != nil {
 			switch e := err.(type) {

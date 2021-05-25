@@ -15,6 +15,7 @@ func TestBroker_listen(t *testing.T) {
 		m := testunpi.NewMockAdapter()
 		defer m.Stop()
 		b := NewBroker(m, m, ml)
+		b.Start()
 		defer b.Stop()
 
 		awaitOneMatch := false
@@ -46,6 +47,7 @@ func TestBroker_listen(t *testing.T) {
 		m := testunpi.NewMockAdapter()
 		defer m.Stop()
 		b := NewBroker(m, m, ml)
+		b.Start()
 		defer b.Stop()
 
 		awaitOneMatch := false

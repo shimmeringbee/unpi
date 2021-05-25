@@ -1,14 +1,21 @@
 package broker
 
 import (
+	"github.com/shimmeringbee/unpi"
 	. "github.com/shimmeringbee/unpi/library"
 	"io"
 	"sync"
 )
 
+type FrameReader func(r io.Reader) (unpi.Frame, error)
+type FrameWriter func(w io.Writer, frame unpi.Frame) error
+
 type Broker struct {
 	reader io.Reader
 	writer io.Writer
+
+	FrameReader FrameReader
+	FrameWriter FrameWriter
 
 	sendingChannel chan outgoingFrame
 	sendingEnd     chan bool
@@ -30,6 +37,9 @@ func NewBroker(reader io.Reader, writer io.Writer, ml *Library) *Broker {
 		reader: reader,
 		writer: writer,
 
+		FrameReader: unpi.Read,
+		FrameWriter: unpi.Write,
+
 		sendingChannel: make(chan outgoingFrame, PermittedQueuedRequests),
 		sendingEnd:     make(chan bool),
 
@@ -44,12 +54,10 @@ func NewBroker(reader io.Reader, writer io.Writer, ml *Library) *Broker {
 		messageLibrary: ml,
 	}
 
-	z.start()
-
 	return z
 }
 
-func (b *Broker) start() {
+func (b *Broker) Start() {
 	go b.handleSending()
 	go b.handleReceiving()
 }

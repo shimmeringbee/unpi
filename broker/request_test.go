@@ -20,6 +20,7 @@ func TestRequest(t *testing.T) {
 		m := testunpi.NewMockAdapter()
 		defer m.Stop()
 		b := NewBroker(m, m, ml)
+		b.Start()
 		defer b.Stop()
 
 		m.On(AREQ, SYS, 0x01)
@@ -44,6 +45,7 @@ func TestRequest(t *testing.T) {
 		m := testunpi.NewMockAdapter()
 		defer m.Stop()
 		b := NewBroker(m, m, ml)
+		b.Start()
 		defer b.Stop()
 
 		request := Request{}
@@ -62,6 +64,7 @@ func TestRequest(t *testing.T) {
 		m := testunpi.NewMockAdapter()
 		defer m.Stop()
 		b := NewBroker(m, m, ml)
+		b.Start()
 		defer b.Stop()
 
 		request := Request{}

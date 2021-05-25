@@ -28,6 +28,7 @@ func TestRequestResponse(t *testing.T) {
 		m := testunpi.NewMockAdapter()
 		defer m.Stop()
 		b := NewBroker(m, m, ml)
+		b.Start()
 		defer b.Stop()
 
 		expectedResponse := Response{Value: 42}
@@ -70,6 +71,7 @@ func TestRequestResponse(t *testing.T) {
 		m := testunpi.NewMockAdapter()
 		defer m.Stop()
 		b := NewBroker(m, m, ml)
+		b.Start()
 		defer b.Stop()
 
 		expectedResponse := Response{Value: 42}
@@ -111,6 +113,7 @@ func TestRequestResponse(t *testing.T) {
 		m := testunpi.NewMockAdapter()
 		defer m.Stop()
 		b := NewBroker(m, m, ml)
+		b.Start()
 		defer b.Stop()
 
 		m.On(SREQ, SYS, 0x01)
@@ -142,6 +145,7 @@ func TestBroker_Await(t *testing.T) {
 		m := testunpi.NewMockAdapter()
 		defer m.Stop()
 		b := NewBroker(m, m, ml)
+		b.Start()
 		defer b.Stop()
 
 		expectedResponse := Response{Value: 0x42}
@@ -178,6 +182,7 @@ func TestBroker_Await(t *testing.T) {
 		m := testunpi.NewMockAdapter()
 		defer m.Stop()
 		b := NewBroker(m, m, ml)
+		b.Start()
 		defer b.Stop()
 
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
@@ -203,6 +208,7 @@ func TestBroker_Await(t *testing.T) {
 		m := testunpi.NewMockAdapter()
 		defer m.Stop()
 		b := NewBroker(m, m, ml)
+		b.Start()
 		defer b.Stop()
 
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
@@ -228,6 +234,7 @@ func TestBroker_Subscribe(t *testing.T) {
 		m := testunpi.NewMockAdapter()
 		defer m.Stop()
 		b := NewBroker(m, m, ml)
+		b.Start()
 		defer b.Stop()
 
 		err, subCancel := b.Subscribe(&Message{}, func(v interface{}) {})
@@ -251,6 +258,7 @@ func TestBroker_Subscribe(t *testing.T) {
 		m := testunpi.NewMockAdapter()
 		defer m.Stop()
 		b := NewBroker(m, m, ml)
+		b.Start()
 		defer b.Stop()
 
 		called := 0
