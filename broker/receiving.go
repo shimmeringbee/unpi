@@ -2,7 +2,6 @@ package broker
 
 import (
 	"errors"
-	"io"
 	"log"
 	"syscall"
 )
@@ -12,18 +11,12 @@ func (b *Broker) handleReceiving() {
 		frame, err := b.FrameReader(b.reader)
 
 		if err != nil {
-			switch e := err.(type) {
-			case syscall.Errno:
-				if e == syscall.EINTR {
-					continue
-				}
+			if errors.Is(err, syscall.EINTR) {
+				continue
 			}
 
 			log.Printf("unpi read failed: %v\n", err)
-
-			if errors.Is(err, io.EOF) {
-				return
-			}
+			return
 		} else {
 			b.handleListeners(frame)
 		}
